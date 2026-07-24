@@ -4,7 +4,8 @@
 // Required environment variables (set in Vercel Project Settings → Environment Variables):
 //   RESEND_API_KEY   - Your Resend API key (starts with "re_")
 //   RESEND_FROM      - A verified sender on your Resend domain, e.g. "Design By TWM <noreply@designbytwm.com>"
-//   RESEND_TO        - The inbox that should receive leads, e.g. "info@designbytwm.com"
+//   RESEND_TO        - Who should receive leads. One address, or several separated
+//                       by commas, e.g. "info@designbytwm.com,designbytwmwebmaster@gmail.com,media@designbytwm.com"
 //
 // Install dependency before deploying:
 //   npm install resend
@@ -27,9 +28,10 @@ module.exports = async function handler(req, res) {
 
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.RESEND_FROM;
-    const to = process.env.RESEND_TO;
+    const toRaw = process.env.RESEND_TO;
+    const to = toRaw ? toRaw.split(',').map((addr) => addr.trim()).filter(Boolean) : [];
 
-    if (!apiKey || !from || !to) {
+    if (!apiKey || !from || !to.length) {
       console.error('Missing Resend configuration (RESEND_API_KEY / RESEND_FROM / RESEND_TO)');
       return res.status(500).json({ error: 'Server not configured' });
     }
